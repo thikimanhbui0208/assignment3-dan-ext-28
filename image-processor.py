@@ -101,7 +101,7 @@ class ImageProcessor:
 
       
       def load_image(self,filepath:str)-> bool:
-            # Loads an image from the same folder and creates 5 random differences
+            # Loads an image from the same folder and creates 5 random differences within the image
             img = cv2.imread(filepath)
             if img is None:
                   return False
