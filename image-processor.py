@@ -161,7 +161,7 @@ if __name__ == "__main__":
       if len(sys.argv) < 2:
             print("Usage: python image_processor.py <path_to_image>")
             print("Example: python image_processor.py <path_to_image>")
-            print("Example: python image_processor.py photo.jpg")
+          
 
       processor = ImageProcessor()
       success = processor.load_image(sys.argv[1])
@@ -176,8 +176,8 @@ if __name__ == "__main__":
       # Original and modified images are saved in the same folder
       cv2.imwrite("original_output.jpg", processor.original)
       cv2.imwrite("modified_output.jpg",processor.modified)
-      print("Saved: output_original.jpg and output_modified.jpg")
-      print("Open both files side-by-side to visually check the differences.")                  
+      print("Saved: Original Image file and Modified Image file are saved in the same folder")
+      print("You can open both files side by side to find out the differences")                  
       
 
 
