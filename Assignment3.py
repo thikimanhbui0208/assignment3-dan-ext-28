@@ -132,6 +132,96 @@ class PatchCopyDifference(Difference):
 
         return BrightnessDifference(x, y, w, h).apply(image)
         class Difference:
+from PIL import Image, ImageTk
+from pathlib import Path
+
+CANVAS_SIZE = 550
+DIFFERENCES_PER_IMAGE = 5
+MARKER_RADIUS = 20
+MARKER_GAP = 8
+
+class ImageProcessor:
+    """Loads images and creates the modified copy."""
+
+    DIFF_TYPES = [
+        ColorShiftDifference,
+        BlurDifference,
+        BrightnessDifference,
+        PatchCopyDifference,
+    ]
+
+    def __init__(self, max_display_size=(CANVAS_SIZE, CANVAS_SIZE)):
+        self.max_display_size = max_display_size
+
+    def load_image(self, path):
+        allowed_extensions = [".jpg", ".jpeg", ".png", ".bmp"]  # File types required for the assignment
+        file_extension = Path(path).suffix.lower()
+        if file_extension not in allowed_extensions:
+            raise ValueError("Please choose a JPG, JPEG, PNG, or BMP image file.")
+
+        image = cv2.imread(path)
+        if image is None:
+            raise ValueError("The selected file has an image extension, but OpenCV could not read it. The file may be damaged or unsupported.")
+        return image
+
+    def generate_differences(self, image, count=DIFFERENCES_PER_IMAGE):
+        h, w = image.shape[:2]
+        short_side = min(w, h)
+        scale = min(self.max_display_size[0] / w, self.max_display_size[1] / h)  # Display scale
+
+        min_display_size = 6  # Smallest visible difference size
+        max_display_size = 10  # Largest visible difference size
+
+        min_size = max(3, int(min_display_size / scale))  # Smallest difference in original pixels
+        max_size = max(min_size + 4, int(max_display_size / scale))  # Largest difference in original pixels
+        margin = max(5, int(short_side * 0.02), int(MARKER_RADIUS / scale) + 1)  # Keeps marker circles inside the image edge
+        marker_spacing = int(((MARKER_RADIUS * 2) + MARKER_GAP) / scale) + 1  # Circle spacing in original pixels
+
+        if w < max_size * 3 or h < max_size * 3:
+            raise ValueError(f"Image too small for {count} distinct differences.")
+
+        diffs = []
+        type_counts = {}
+        attempts = 0
+        while len(diffs) < count and attempts < 5000:
+            attempts += 1
+            available = [cls for cls in self.DIFF_TYPES if type_counts.get(cls.__name__, 0) < 2]
+            diff_class = random.choice(available or self.DIFF_TYPES)
+
+            dw = random.randint(min_size, max_size)
+            dh = random.randint(min_size, max_size)
+            x = random.randint(margin, w - dw - margin)
+            y = random.randint(margin, h - dh - margin)
+            candidate = diff_class(x, y, dw, dh)
+
+            if any(candidate.overlaps(diff, marker_spacing) for diff in diffs):  # Guarantees the five regions do not overlap
+                continue
+
+            diffs.append(candidate)
+            type_counts[diff_class.__name__] = type_counts.get(diff_class.__name__, 0) + 1
+
+        if len(diffs) < count:
+            raise RuntimeError("Could not place all differences without overlap.")
+
+        modified = image.copy()
+        for diff in diffs:
+            diff.apply(modified)  # Polymorphism: each child class changes the image differently
+        return modified, diffs
+
+    def fit_to_display(self, image):
+        h, w = image.shape[:2]
+        max_w, max_h = self.max_display_size
+        scale = min(max_w / w, max_h / h)  # Fit inside the display box
+        new_w = max(1, int(w * scale))  # Display width
+        new_h = max(1, int(h * scale))  # Display height
+        interpolation = cv2.INTER_AREA if scale < 1.0 else cv2.INTER_CUBIC  # Shrink or enlarge nicely
+        image = cv2.resize(image, (new_w, new_h), interpolation=interpolation)
+        return image, scale
+
+    def to_photoimage(self, bgr):
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)  # Tkinter expects RGB, OpenCV uses BGR
+        return ImageTk.PhotoImage(Image.fromarray(rgb))
+
 """
 Represents one difference area in the image.
 This class stores the x, y position, width, height,
