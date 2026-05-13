@@ -51,7 +51,7 @@ python3 Spot_the_Differences.py
 
 ## Group Assignment DAN/EXT 28 - Name - Student Number
 
-Thi Kim Anh Bui - S401484
-Ngoc Ngan Le - S401010
-Usha Lamsal - S401809
-Sandesh Paudel Paudel - S404558
+- Thi Kim Anh Bui - S401484
+- Ngoc Ngan Le - S401010
+- Usha Lamsal - S401809
+- Sandesh Paudel Paudel - S404558
