@@ -1,6 +1,6 @@
 # Spot the Differences
 
-A Tkinter-based desktop game developed for **HIT137 Assignment 3**. The player loads an image, and the application programmatically generates a modified copy containing exactly five hidden differences. The player must inspect the the modified images and click on it to find the differences.
+A Tkinter-based desktop game developed for **HIT137 Assignment 3**. The player loads an image, and the application programmatically generates a modified copy containing exactly five hidden differences. The player must inspect the the modified image and click on it to find the differences.
 
 ## Preview
 ![Preview](preview.png)
@@ -26,7 +26,7 @@ Windows:
 py Spot_the_Differences.py
 ```
 
-MacOS:
+MacOS/Linux:
 ```bash
 python3 Spot_the_Differences.py
 ```
