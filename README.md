@@ -48,3 +48,10 @@ python3 Spot_the_Differences.py
 - `ImageProcessor` handles loading, resizing, and generating differences.
 - `GameState` tracks mistakes, remaining differences, locking, and total found differences.
 - `SpotTheDifferenceApp` builds the Tkinter interface and handles user actions.
+
+## Group Assignment DAN/EXT 28 - Name - Student Number
+
+Thi Kim Anh Bui - S401484
+Ngoc Ngan Le - S401010
+Usha Lamsal - S401809
+Sandesh Paudel Paudel - S404558
