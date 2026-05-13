@@ -2,6 +2,35 @@ import random
 import cv2
 import numpy as np
 
+from PIL import Image, ImageTk
+from pathlib import Path
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
+
+
+CANVAS_SIZE = 550
+DIFFERENCES_PER_IMAGE = 5
+MARKER_RADIUS = 20
+MARKER_GAP = 8
+MAX_MISTAKES = 3
+
+BG = "#0f172a"          # dark navy
+PANEL = "#111827"       # charcoal
+BORDER = "#334155"      # slate
+TEXT = "#e5e7eb"        # light gray
+MUTED = "#94a3b8"       # gray-blue
+BLUE = "#60a5fa"        # blue
+LIGHT_BLUE = "#93c5fd"  # light blue
+GREEN = "#34d399"       # green
+RED = "#ef4444"         # red
+PINK = "#fb7185"        # pink-red
+
+FONT_TITLE = ("Segoe UI", 22, "bold")
+FONT_HEADER = ("Segoe UI", 12, "bold")
+FONT_NORMAL = ("Segoe UI", 11)
+FONT_SMALL = ("Segoe UI", 10)
+
+
 # Difference classes show inheritance and polymorphism.
 class Difference:
     """Parent class for one hidden difference."""
@@ -131,14 +160,7 @@ class PatchCopyDifference(Difference):
                 return image
 
         return BrightnessDifference(x, y, w, h).apply(image)
-        class Difference:
-from PIL import Image, ImageTk
-from pathlib import Path
 
-CANVAS_SIZE = 550
-DIFFERENCES_PER_IMAGE = 5
-MARKER_RADIUS = 20
-MARKER_GAP = 8
 
 class ImageProcessor:
     """Loads images and creates the modified copy."""
@@ -222,243 +244,23 @@ class ImageProcessor:
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)  # Tkinter expects RGB, OpenCV uses BGR
         return ImageTk.PhotoImage(Image.fromarray(rgb))
 
-"""
-Represents one difference area in the image.
-This class stores the x, y position, width, height,
-and whether the difference has already been found.
-"""
 
-def __init__(self, x, y, width, height):
-    self.x = x
-    self.y = y
-    self.width = width
-    self.height = height
-    self.found = False
-
-def contains_click(self, click_x, click_y):
-    """
-    Checks if the player's click is inside this difference area.
-    """
-    return (
-        self.x <= click_x <= self.x + self.width
-        and self.y <= click_y <= self.y + self.height
-    )
-
-def get_center(self):
-    """
-    Returns the centre point of the difference area.
-    Useful for drawing circles in the GUI.
-    """
-    center_x = self.x + self.width // 2
-    center_y = self.y + self.height // 2
-    return center_x, center_y
-
-def get_radius(self):
-    """
-    Returns a suitable circle radius for marking the difference.
-    """
-    return max(self.width, self.height) // 2 + 10
-class GameLogic:
-"""
-Handles the main game rules:
-- checking clicks
-- counting found differences
-- counting mistakes
-- stopping after 3 mistakes
-- revealing unfound differences
-- resetting for a new image
-"""
-
-def __init__(self, difference_regions):
-    """
-    difference_regions can be a list of Difference objects
-    or a list of dictionaries from the image processing part.
-
-    Example dictionary format:
-    {"x": 100, "y": 80, "w": 50, "h": 40}
-    """
-
-    self.max_mistakes = 3
-    self.load_differences(difference_regions)
-
-def load_differences(self, difference_regions):
-    """
-    Loads the 5 generated difference regions into the game.
-    This allows Part A and Part B to send the generated differences here.
-    """
-
-    self.differences = []
-
-    for region in difference_regions:
-        if isinstance(region, Difference):
-            self.differences.append(region)
-        else:
-            x = region.get("x")
-            y = region.get("y")
-            width = region.get("w", region.get("width"))
-            height = region.get("h", region.get("height"))
-
-            self.differences.append(Difference(x, y, width, height))
-
-    self.total_differences = len(self.differences)
-    self.found_count = 0
-    self.mistakes = 0
-    self.game_over = False
-    self.revealed = False
-
-def check_click(self, click_x, click_y):
-    """
-    Checks the player's click on the modified image.
-
-    Returns a dictionary so the GUI can easily understand what happened.
-    """
-
-    if self.game_over:
-        return {
-            "result": "game_over",
-            "message": "No more guesses allowed.",
-            "difference": None
-        }
-
-    for difference in self.differences:
-        if difference.contains_click(click_x, click_y):
-            if difference.found:
-                return {
-                    "result": "already_found",
-                    "message": "This difference was already found.",
-                    "difference": difference
-                }
-
-            difference.found = True
-            self.found_count += 1
-
-            if self.found_count == self.total_differences:
-                self.game_over = True
-                return {
-                    "result": "win",
-                    "message": "All differences found. You win!",
-                    "difference": difference
-                }
-
-            return {
-                "result": "correct",
-                "message": "Correct difference found.",
-                "difference": difference
-            }
-
-    self.mistakes += 1
-
-    if self.mistakes >= self.max_mistakes:
-        self.game_over = True
-        return {
-            "result": "lost",
-            "message": "Maximum 3 mistakes reached. Game over.",
-            "difference": None
-        }
-
-    return {
-        "result": "wrong",
-        "message": "Wrong click. Try again.",
-        "difference": None
-    }
-
-def get_remaining_count(self):
-    """
-    Returns how many differences are still not found.
-    """
-    return self.total_differences - self.found_count
-
-def get_found_count(self):
-    """
-    Returns how many differences have been found.
-    """
-    return self.found_count
-
-def get_mistake_count(self):
-    """
-    Returns the current number of mistakes.
-    """
-    return self.mistakes
-
-def get_score(self):
-    """
-    Returns a simple score.
-    Correct findings increase the score.
-    Mistakes reduce the score slightly.
-    """
-    score = self.found_count * 10 - self.mistakes * 2
-    return max(score, 0)
-
-def reveal_unfound_differences(self):
-    """
-    Reveals all differences that were not found yet.
-    The GUI should draw these revealed differences with blue circles.
-    """
-
-    self.revealed = True
-    self.game_over = True
-
-    unfound_differences = []
-
-    for difference in self.differences:
-        if not difference.found:
-            difference.found = True
-            unfound_differences.append(difference)
-
-    self.found_count = self.total_differences
-
-    return unfound_differences
-
-def get_all_differences(self):
-    """
-    Returns all difference regions.
-    Useful when the GUI needs to draw circles.
-    """
-    return self.differences
-
-def get_found_differences(self):
-    """
-    Returns only the differences already found by the player.
-    These should be marked with red circles.
-    """
-    return [difference for difference in self.differences if difference.found]
-
-def is_game_over(self):
-    """
-    Returns True if the game has ended.
-    """
-    return self.game_over
-
-def has_won(self):
-    """
-    Returns True if the player found all differences before losing.
-    """
-    return self.found_count == self.total_differences and not self.revealed
-
-def has_lost(self):
-    """
-    Returns True if the player reached 3 mistakes.
-    """
-    return self.mistakes >= self.max_mistakes
-
-def reset_game(self, new_difference_regions):
-    """
-    Resets the game when a new image is loaded.
-    """
-    self.load_differences(new_difference_regions)
-    MAX_MISTAKES = 3
 class GameState:
     """Tracks the current round."""
+
     def __init__(self):
         self.total_found = 0  # Cumulative score across multiple images
         self.reset_for_new_image([])
+
     @property
     def remaining(self):
         return sum(1 for diff in self.differences if not diff.found)
+
     def reset_for_new_image(self, diffs):
         self.differences = diffs
         self.mistakes = 0
         self.locked = False  # Allows clicks again for the new image
+
     def register_click(self, x, y):
         if self.locked:
             return None
@@ -471,6 +273,7 @@ class GameState:
         if self.mistakes >= MAX_MISTAKES:
             self.locked = True  # Stop image clicks after three wrong guesses
         return None
+
     def reveal_all(self):
         unfound = [diff for diff in self.differences if not diff.found]
         for diff in unfound:
@@ -478,3 +281,182 @@ class GameState:
         self.locked = True
         return unfound
 
+
+class SpotTheDifferenceApp(tk.Tk):
+    """Main Tkinter app."""
+
+    def __init__(self):
+        super().__init__()
+        self.title("Spot the Differences")
+        self.configure(bg=BG)
+        self.resizable(False, False)
+
+        self.processor = ImageProcessor()
+        self.state = GameState()
+        self.original_bgr = None
+        self.modified_bgr = None
+        self.scale = 1.0
+        self.photo_left = None
+        self.photo_right = None
+
+        self.setup_style()
+        self.build_ui()
+        self.update_status()
+
+    def setup_style(self):
+        style = ttk.Style(self)
+        try:
+            style.theme_use("clam")  # Helps custom button colors show on more systems
+        except tk.TclError:
+            pass
+        style.configure("App.TButton", font=FONT_NORMAL, padding=(14, 7), background=BLUE, foreground=BG)
+        style.map("App.TButton", background=[("active", LIGHT_BLUE), ("disabled", PANEL)], foreground=[("disabled", MUTED)])
+
+    def build_ui(self):
+        tk.Label(self, text="Spot the Differences", fg=TEXT, bg=BG, font=FONT_TITLE).pack(pady=(15, 5))
+
+        button_row = tk.Frame(self, bg=BG)
+        button_row.pack(pady=5)
+        ttk.Button(button_row, text="Load Image", width=14, style="App.TButton", command=self.load_image).pack(side=tk.LEFT, padx=10)
+        self.reveal_btn = ttk.Button(button_row, text="Reveal", width=14, style="App.TButton", command=self.reveal, state=tk.DISABLED)
+        self.reveal_btn.pack(side=tk.LEFT, padx=10)
+
+        self.message_var = tk.StringVar(value="Load an image to start.")
+        self.message_label = tk.Label(self, textvariable=self.message_var, fg=BLUE, bg=BG, font=FONT_SMALL)
+        self.message_label.pack(pady=(8, 2))
+
+        self.status_var = tk.StringVar()
+        tk.Label(self, textvariable=self.status_var, fg=LIGHT_BLUE, bg=BG, font=FONT_HEADER).pack(pady=(0, 10))
+
+        image_row = tk.Frame(self, bg=BG)
+        image_row.pack(pady=(12, 16))
+        self.canvas_left = self.make_image_column(image_row, "Original Image\n")
+        self.canvas_right = self.make_image_column(image_row, "Modified Image\nClick here to find differences")
+        self.canvas_right.config(cursor="crosshair")
+        self.canvas_right.bind("<Button-1>", self.on_click_modified)
+
+    def make_image_column(self, parent, title):
+        column = tk.Frame(parent, bg=BG)
+        column.pack(side=tk.LEFT, padx=20)
+        tk.Label(column, text=title, fg=TEXT, bg=BG, font=FONT_HEADER, justify="center").pack(pady=(0, 6))
+        canvas = tk.Canvas(
+            column,
+            width=CANVAS_SIZE,
+            height=CANVAS_SIZE,
+            bg=PANEL,
+            highlightbackground=BORDER,
+            highlightcolor=BORDER,
+            highlightthickness=1,
+            bd=0,
+        )
+        canvas.pack()
+        return canvas
+
+    def load_image(self):
+        path = filedialog.askopenfilename(
+            title="Choose an image",
+            filetypes=[("Images", "*.jpg *.jpeg *.png *.bmp *.JPG *.JPEG *.PNG *.BMP"), ("All files", "*.*")]
+        )
+        if not path:
+            return
+
+        try:
+            full_original = self.processor.load_image(path)
+            full_modified, diffs = self.processor.generate_differences(full_original)
+        except Exception as error:
+            messagebox.showerror("Error", str(error))
+            return
+
+        self.original_bgr, self.scale = self.processor.fit_to_display(full_original)  # Save scale for click mapping
+        self.modified_bgr, _ = self.processor.fit_to_display(full_modified)
+        self.state.reset_for_new_image(diffs)
+        self.message_var.set("Game started. Find all 5 differences.")
+        self.message_label.config(fg=BLUE)
+        self.reveal_btn.config(state=tk.NORMAL)
+        self.refresh_canvases()
+        self.update_status()
+
+    def reveal(self):
+        if not self.state.differences:
+            return
+        for diff in self.state.reveal_all():
+            self.draw_circle_on_both(diff, BLUE)
+        self.message_var.set("Revealed all remaining differences. Load a new image to play again.")
+        self.message_label.config(fg=LIGHT_BLUE)
+        self.reveal_btn.config(state=tk.DISABLED)
+        self.update_status()
+
+    def on_click_modified(self, event):
+        if not self.state.differences or self.state.locked:
+            return
+
+        offset_x = (CANVAS_SIZE - self.modified_bgr.shape[1]) // 2  # Image is centered inside the canvas
+        offset_y = (CANVAS_SIZE - self.modified_bgr.shape[0]) // 2  # Image is centered inside the canvas
+        if not (0 <= event.x - offset_x < self.modified_bgr.shape[1] and 0 <= event.y - offset_y < self.modified_bgr.shape[0]):
+            return
+
+        image_x = int((event.x - offset_x) / self.scale)  # Convert canvas click to original image x
+        image_y = int((event.y - offset_y) / self.scale)  # Convert canvas click to original image y
+        match = self.state.register_click(image_x, image_y)
+
+        if match is not None:
+            self.draw_circle_on_both(match, RED)
+            if self.state.remaining == 0:
+                self.finish_round()
+        else:
+            self.show_wrong_click(event.x, event.y)
+            if self.state.locked:
+                found = DIFFERENCES_PER_IMAGE - self.state.remaining
+                self.message_var.set(f"Too many mistakes! You found {found}/{DIFFERENCES_PER_IMAGE} differences. Use Reveal or load a new image to keep playing.")
+                self.message_label.config(fg=PINK)
+                self.update_idletasks()  # Let Tkinter draw the wrong-click mark before the popup appears
+                messagebox.showinfo(
+                    "Too many mistakes",
+                    f"You found {found}/{DIFFERENCES_PER_IMAGE} differences.\n"
+                    "Use Reveal to see the remaining answers or load a new image to keep playing."
+                )
+        self.update_status()
+
+    def finish_round(self):
+        self.state.locked = True
+        self.reveal_btn.config(state=tk.DISABLED)
+        self.message_var.set("You found all 5 differences. Load another image to keep playing.")
+        self.message_label.config(fg=GREEN)
+        self.update_status()
+        self.update_idletasks()  # Let Tkinter draw the last circle before the popup appears
+        self.after(100, lambda: messagebox.showinfo("Well done!", f"You found all {DIFFERENCES_PER_IMAGE} differences!\nTotal found: {self.state.total_found}"))
+
+    def refresh_canvases(self):
+        self.photo_left = self.processor.to_photoimage(self.original_bgr)
+        self.photo_right = self.processor.to_photoimage(self.modified_bgr)
+        self.canvas_left.delete("all")
+        self.canvas_right.delete("all")
+        for canvas, photo in ((self.canvas_left, self.photo_left), (self.canvas_right, self.photo_right)):
+            x = (CANVAS_SIZE - photo.width()) // 2  # Center image horizontally
+            y = (CANVAS_SIZE - photo.height()) // 2  # Center image vertically
+            canvas.create_image(x, y, image=photo, anchor=tk.NW)
+
+    def draw_circle_on_both(self, diff, color):
+        cx, cy = diff.center()
+        radius = MARKER_RADIUS
+        x = cx * self.scale + (CANVAS_SIZE - self.original_bgr.shape[1]) // 2  # Display x position
+        y = cy * self.scale + (CANVAS_SIZE - self.original_bgr.shape[0]) // 2  # Display y position
+        for canvas in (self.canvas_left, self.canvas_right):
+            canvas.create_oval(x - radius, y - radius, x + radius, y + radius, outline=color, width=3)
+
+    def show_wrong_click(self, x, y):
+        size = 12
+        line1 = self.canvas_right.create_line(x - size, y - size, x + size, y + size, fill=PINK, width=3)
+        line2 = self.canvas_right.create_line(x - size, y + size, x + size, y - size, fill=PINK, width=3)
+        self.after(600, lambda: (self.canvas_right.delete(line1), self.canvas_right.delete(line2)))  # Remove the wrong-click mark after a short moment
+
+    def update_status(self):
+        self.status_var.set(
+            f"Remaining: {self.state.remaining}  |  "
+            f"Mistakes: {self.state.mistakes} / {MAX_MISTAKES}  |  "
+            f"Total Found: {self.state.total_found}"
+        )
+
+
+if __name__ == "__main__":
+    SpotTheDifferenceApp().mainloop()
