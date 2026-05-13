@@ -446,3 +446,35 @@ def reset_game(self, new_difference_regions):
     Resets the game when a new image is loaded.
     """
     self.load_differences(new_difference_regions)
+    MAX_MISTAKES = 3
+class GameState:
+    """Tracks the current round."""
+    def __init__(self):
+        self.total_found = 0  # Cumulative score across multiple images
+        self.reset_for_new_image([])
+    @property
+    def remaining(self):
+        return sum(1 for diff in self.differences if not diff.found)
+    def reset_for_new_image(self, diffs):
+        self.differences = diffs
+        self.mistakes = 0
+        self.locked = False  # Allows clicks again for the new image
+    def register_click(self, x, y):
+        if self.locked:
+            return None
+        for diff in self.differences:
+            if not diff.found and diff.contains(x, y):
+                diff.mark_found()
+                self.total_found += 1
+                return diff
+        self.mistakes += 1
+        if self.mistakes >= MAX_MISTAKES:
+            self.locked = True  # Stop image clicks after three wrong guesses
+        return None
+    def reveal_all(self):
+        unfound = [diff for diff in self.differences if not diff.found]
+        for diff in unfound:
+            diff.mark_found()
+        self.locked = True
+        return unfound
+
