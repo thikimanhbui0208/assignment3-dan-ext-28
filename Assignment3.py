@@ -409,6 +409,7 @@ class SpotTheDifferenceApp(tk.Tk):
                 found = DIFFERENCES_PER_IMAGE - self.state.remaining
                 self.message_var.set(f"Too many mistakes! You found {found}/{DIFFERENCES_PER_IMAGE} differences. Use Reveal or load a new image to keep playing.")
                 self.message_label.config(fg=PINK)
+                self.update_status()
                 self.update_idletasks()  # Let Tkinter draw the wrong-click mark before the popup appears
                 messagebox.showinfo(
                     "Too many mistakes",
